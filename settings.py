@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+ï»¿from pydantic_settings import BaseSettings
 from typing import List, Optional, Dict
 from functools import lru_cache
 from enum import Enum
@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     telegram_bot_token: str = "test"
     telegram_channel_id: str = "@test"
     
-    # Database - ÈÑÏĞÀÂËÅÍÍÛÉ URL äëÿ aiosqlite
+    # Database - Ğ˜Ğ¡ĞŸĞ ĞĞ’Ğ›Ğ•ĞĞĞ«Ğ™ URL Ğ´Ğ»Ñ aiosqlite
     database_url: str = "sqlite+aiosqlite:///./ntopng_alerts.db"
     
     # Server

@@ -1,4 +1,4 @@
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+п»їfrom sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean
 from datetime import datetime
@@ -11,21 +11,21 @@ settings = get_settings()
 
 class Alert(Base):
     """
-    Модель алерта для хранения в базе данных.
+    РњРѕРґРµР»СЊ Р°Р»РµСЂС‚Р° РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С….
     
     Attributes:
-        id: Уникальный идентификатор алерта
-        timestamp: Время получения алерта
-        message: Оригинальное сообщение от ntopng
-        severity: Уровень серьезности (critical/warning/info)
-        alert_type: Тип алерта (ddos_attack, scan_detected и т.д.)
-        source_ip: IP-адрес источника проблемы
-        destination_ip: IP-адрес назначения
-        protocol: Сетевой протокол
-        risk_score: Числовая оценка риска (0-100)
-        interface: Сетевой интерфейс
-        category: Категория алерта (security/performance/infrastructure/network)
-        resolved: Флаг разрешения алерта
+        id: РЈРЅРёРєР°Р»СЊРЅС‹Р№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ Р°Р»РµСЂС‚Р°
+        timestamp: Р’СЂРµРјСЏ РїРѕР»СѓС‡РµРЅРёСЏ Р°Р»РµСЂС‚Р°
+        message: РћСЂРёРіРёРЅР°Р»СЊРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ РѕС‚ ntopng
+        severity: РЈСЂРѕРІРµРЅСЊ СЃРµСЂСЊРµР·РЅРѕСЃС‚Рё (critical/warning/info)
+        alert_type: РўРёРї Р°Р»РµСЂС‚Р° (ddos_attack, scan_detected Рё С‚.Рґ.)
+        source_ip: IP-Р°РґСЂРµСЃ РёСЃС‚РѕС‡РЅРёРєР° РїСЂРѕР±Р»РµРјС‹
+        destination_ip: IP-Р°РґСЂРµСЃ РЅР°Р·РЅР°С‡РµРЅРёСЏ
+        protocol: РЎРµС‚РµРІРѕР№ РїСЂРѕС‚РѕРєРѕР»
+        risk_score: Р§РёСЃР»РѕРІР°СЏ РѕС†РµРЅРєР° СЂРёСЃРєР° (0-100)
+        interface: РЎРµС‚РµРІРѕР№ РёРЅС‚РµСЂС„РµР№СЃ
+        category: РљР°С‚РµРіРѕСЂРёСЏ Р°Р»РµСЂС‚Р° (security/performance/infrastructure/network)
+        resolved: Р¤Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ Р°Р»РµСЂС‚Р°
     """
     
     __tablename__ = "alerts"
@@ -45,13 +45,13 @@ class Alert(Base):
 
 class DatabaseManager:
     """
-    Менеджер для работы с базой данных.
+    РњРµРЅРµРґР¶РµСЂ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ Р±Р°Р·РѕР№ РґР°РЅРЅС‹С….
     
-    Обеспечивает асинхронное подключение к БД и управление сессиями.
+    РћР±РµСЃРїРµС‡РёРІР°РµС‚ Р°СЃРёРЅС…СЂРѕРЅРЅРѕРµ РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє Р‘Р” Рё СѓРїСЂР°РІР»РµРЅРёРµ СЃРµСЃСЃРёСЏРјРё.
     """
     
     def __init__(self):
-        """Инициализация менеджера базы данных."""
+        """РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјРµРЅРµРґР¶РµСЂР° Р±Р°Р·С‹ РґР°РЅРЅС‹С…."""
         self.engine = create_async_engine(
             settings.database_url,
             echo=settings.debug,
@@ -66,54 +66,54 @@ class DatabaseManager:
 
     async def init_db(self) -> None:
         """
-        Инициализация базы данных.
+        РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±Р°Р·С‹ РґР°РЅРЅС‹С….
         
-        Создает все таблицы, если они не существуют.
+        РЎРѕР·РґР°РµС‚ РІСЃРµ С‚Р°Р±Р»РёС†С‹, РµСЃР»Рё РѕРЅРё РЅРµ СЃСѓС‰РµСЃС‚РІСѓСЋС‚.
         
         Raises:
-            Exception: Если произошла ошибка при создании таблиц
+            Exception: Р•СЃР»Рё РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё СЃРѕР·РґР°РЅРёРё С‚Р°Р±Р»РёС†
         """
         try:
             async with self.engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
-            logger.info("База данных успешно инициализирована")
+            logger.info("Р‘Р°Р·Р° РґР°РЅРЅС‹С… СѓСЃРїРµС€РЅРѕ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅР°")
         except Exception as e:
-            logger.error(f"Ошибка инициализации БД: {e}")
+            logger.error(f"РћС€РёР±РєР° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё Р‘Р”: {e}")
             raise
 
     @asynccontextmanager
     async def get_session(self) -> AsyncSession:
         """
-        Асинхронный контекстный менеджер для сессии БД.
+        РђСЃРёРЅС…СЂРѕРЅРЅС‹Р№ РєРѕРЅС‚РµРєСЃС‚РЅС‹Р№ РјРµРЅРµРґР¶РµСЂ РґР»СЏ СЃРµСЃСЃРёРё Р‘Р”.
         
         Yields:
-            AsyncSession: Асинхронная сессия базы данных
+            AsyncSession: РђСЃРёРЅС…СЂРѕРЅРЅР°СЏ СЃРµСЃСЃРёСЏ Р±Р°Р·С‹ РґР°РЅРЅС‹С…
             
         Raises:
-            Exception: Если произошла ошибка при работе с сессией
+            Exception: Р•СЃР»Рё РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё СЂР°Р±РѕС‚Рµ СЃ СЃРµСЃСЃРёРµР№
         """
         async with self.async_session() as session:
             try:
                 yield session
             except Exception as e:
                 await session.rollback()
-                logger.error(f"Ошибка сессии БД: {e}")
+                logger.error(f"РћС€РёР±РєР° СЃРµСЃСЃРёРё Р‘Р”: {e}")
                 raise
             finally:
                 await session.close()
 
     async def save_alert(self, alert_data: dict) -> int:
         """
-        Сохранение алерта в базу данных.
+        РЎРѕС…СЂР°РЅРµРЅРёРµ Р°Р»РµСЂС‚Р° РІ Р±Р°Р·Сѓ РґР°РЅРЅС‹С….
         
         Args:
-            alert_data: Словарь с данными алерта
+            alert_data: РЎР»РѕРІР°СЂСЊ СЃ РґР°РЅРЅС‹РјРё Р°Р»РµСЂС‚Р°
             
         Returns:
-            int: ID сохраненного алерта
+            int: ID СЃРѕС…СЂР°РЅРµРЅРЅРѕРіРѕ Р°Р»РµСЂС‚Р°
             
         Raises:
-            Exception: Если произошла ошибка при сохранении
+            Exception: Р•СЃР»Рё РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё
         """
         async with self.get_session() as session:
             try:
@@ -121,25 +121,25 @@ class DatabaseManager:
                 session.add(alert)
                 await session.commit()
                 await session.refresh(alert)
-                logger.info(f"Алерт сохранен с ID: {alert.id}")
+                logger.info(f"РђР»РµСЂС‚ СЃРѕС…СЂР°РЅРµРЅ СЃ ID: {alert.id}")
                 return alert.id
             except Exception as e:
                 await session.rollback()
-                logger.error(f"Ошибка сохранения алерта: {e}")
+                logger.error(f"РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ Р°Р»РµСЂС‚Р°: {e}")
                 raise
 
     async def mark_alert_resolved(self, alert_id: int) -> bool:
         """
-        Пометить алерт как разрешенный.
+        РџРѕРјРµС‚РёС‚СЊ Р°Р»РµСЂС‚ РєР°Рє СЂР°Р·СЂРµС€РµРЅРЅС‹Р№.
         
         Args:
-            alert_id: ID алерта для пометки
+            alert_id: ID Р°Р»РµСЂС‚Р° РґР»СЏ РїРѕРјРµС‚РєРё
             
         Returns:
-            bool: True если успешно, False если алерт не найден
+            bool: True РµСЃР»Рё СѓСЃРїРµС€РЅРѕ, False РµСЃР»Рё Р°Р»РµСЂС‚ РЅРµ РЅР°Р№РґРµРЅ
             
         Raises:
-            Exception: Если произошла ошибка при обновлении
+            Exception: Р•СЃР»Рё РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё РѕР±РЅРѕРІР»РµРЅРёРё
         """
         async with self.get_session() as session:
             try:
@@ -153,16 +153,16 @@ class DatabaseManager:
                 await session.commit()
                 
                 if result.rowcount > 0:
-                    logger.info(f"Алерт {alert_id} помечен как разрешенный")
+                    logger.info(f"РђР»РµСЂС‚ {alert_id} РїРѕРјРµС‡РµРЅ РєР°Рє СЂР°Р·СЂРµС€РµРЅРЅС‹Р№")
                     return True
                 else:
-                    logger.warning(f"Алерт {alert_id} не найден")
+                    logger.warning(f"РђР»РµСЂС‚ {alert_id} РЅРµ РЅР°Р№РґРµРЅ")
                     return False
                     
             except Exception as e:
                 await session.rollback()
-                logger.error(f"Ошибка пометки алерта как разрешенного: {e}")
+                logger.error(f"РћС€РёР±РєР° РїРѕРјРµС‚РєРё Р°Р»РµСЂС‚Р° РєР°Рє СЂР°Р·СЂРµС€РµРЅРЅРѕРіРѕ: {e}")
                 raise
 
-# Глобальный экземпляр менеджера БД
+# Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ СЌРєР·РµРјРїР»СЏСЂ РјРµРЅРµРґР¶РµСЂР° Р‘Р”
 db_manager = DatabaseManager()

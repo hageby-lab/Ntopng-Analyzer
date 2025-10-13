@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 echo Fixing database configuration...
 
 :: Create fixed database.py
