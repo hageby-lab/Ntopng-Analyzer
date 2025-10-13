@@ -2,22 +2,21 @@ from pydantic_settings import BaseSettings
 from typing import List, Optional, Dict
 from functools import lru_cache
 from enum import Enum
-import os
 
 class Settings(BaseSettings):
-    """Настройки приложения"""
+    """Application settings"""
     
     # Telegram
-    telegram_bot_token: str
-    telegram_channel_id: str
+    telegram_bot_token: str = "test"
+    telegram_channel_id: str = "@test"
     
-    # Database
+    # Database - ИСПРАВЛЕННЫЙ URL для aiosqlite
     database_url: str = "sqlite+aiosqlite:///./ntopng_alerts.db"
     
     # Server
     server_host: str = "0.0.0.0"
     server_port: int = 8000
-    debug: bool = False
+    debug: bool = True
     
     # Analysis intervals in minutes
     analysis_intervals: List[int] = [5, 15, 30, 60, 1440, 10080, 43200]
@@ -30,7 +29,7 @@ class Settings(BaseSettings):
     
     # Redis for caching and Celery
     redis_url: str = "redis://localhost:6379/0"
-    cache_ttl: int = 300  # 5 minutes
+    cache_ttl: int = 300
     
     # Logging
     log_level: str = "INFO"
@@ -45,12 +44,12 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    """Получение настроек с кэшированием"""
+    """Get settings with caching"""
     return Settings()
 
-# Константы приложения
+# Application constants
 class AlertTypes(str, Enum):
-    """Типы алертов"""
+    """Alert types"""
     FLOW_FLOOD = "flow_flood"
     SCAN_DETECTED = "scan_detected"
     DDOS_ATTACK = "ddos_attack"
@@ -62,25 +61,25 @@ class AlertTypes(str, Enum):
     UNKNOWN = "unknown"
 
 class SeverityLevels(str, Enum):
-    """Уровни серьезности"""
+    """Severity levels"""
     CRITICAL = "critical"
     WARNING = "warning"
     INFO = "info"
 
 class Categories(str, Enum):
-    """Категории алертов"""
+    """Alert categories"""
     SECURITY = "security"
     PERFORMANCE = "performance"
     INFRASTRUCTURE = "infrastructure"
     NETWORK = "network"
 
-# Регулярные выражения для анализа
+# Regular expressions for analysis
 REGEX_PATTERNS = {
     'ip_address': r'\b(?:\d{1,3}\.){3}\d{1,3}\b',
     'interface': r'interface[:\s]+([^\s,]+)',
 }
 
-# Паттерны для анализа алертов
+# Patterns for alert analysis
 ALERT_PATTERNS: Dict[str, str] = {
     AlertTypes.FLOW_FLOOD: r'Flow Flood|flow flood',
     AlertTypes.SCAN_DETECTED: r'Scan|scan|Port Scan',
@@ -92,14 +91,14 @@ ALERT_PATTERNS: Dict[str, str] = {
     AlertTypes.INTERFACE_ALERT: r'Interface|interface'
 }
 
-# Ключевые слова для определения серьезности
+# Keywords for severity detection
 SEVERITY_KEYWORDS: Dict[str, List[str]] = {
     SeverityLevels.CRITICAL: ['emergency', 'alert', 'critical', 'error'],
     SeverityLevels.WARNING: ['warning', 'notice'],
     SeverityLevels.INFO: ['info', 'debug', 'information']
 }
 
-# Параметры анализа
+# Analysis parameters
 ANALYSIS_CONFIG = {
     'risk_scores': {
         'critical': 50,
@@ -108,8 +107,8 @@ ANALYSIS_CONFIG = {
     },
     'max_top_items': 5,
     'recent_alerts_limit': 50,
-    'cache_timeout': 300  # 5 minutes
+    'cache_timeout': 300
 }
 
-# Протоколы для анализа
+# Protocols for analysis
 PROTOCOLS = ['TCP', 'UDP', 'ICMP', 'HTTP', 'HTTPS', 'DNS', 'SSH', 'FTP']
