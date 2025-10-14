@@ -7,8 +7,8 @@ class Settings(BaseSettings):
     """Application settings"""
     
     # Telegram
-    telegram_bot_token: str = "test"
-    telegram_channel_id: str = "@test"
+    telegram_bot_token: str = ""
+    telegram_channel_id: str = ""
     
     # Database - ИСПРАВЛЕННЫЙ URL для aiosqlite
     database_url: str = "sqlite+aiosqlite:///./ntopng_alerts.db"

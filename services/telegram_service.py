@@ -1,3 +1,5 @@
+п»їimport os
+import asyncio
 from telegram import Bot
 from telegram.error import TelegramError, NetworkError, TimedOut
 from loguru import logger
@@ -8,43 +10,47 @@ settings = get_settings()
 
 class TelegramNotificationService:
     """
-    Сервис для отправки уведомлений в Telegram.
-    
-    Обеспечивает асинхронную отправку сообщений в Telegram канал
-    с обработкой ошибок и повторными попытками.
+    РЎРµСЂРІРёСЃ РґР»СЏ РѕС‚РїСЂР°РІРєРё СѓРІРµРґРѕРјР»РµРЅРёР№ РІ Telegram.
     """
     
     def __init__(self):
         """
-        Инициализация Telegram сервиса.
-        
-        Raises:
-            ValueError: Если токен бота не указан
+        РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Telegram СЃРµСЂРІРёСЃР°.
         """
-        if not settings.telegram_bot_token:
-            raise ValueError("Telegram bot token is required")
-            
-        self.bot = Bot(token=settings.telegram_bot_token)
-        self.channel_id = settings.telegram_channel_id
-        self.max_retries = 3
-        self.retry_delay = 2  # seconds
+        logger.info("РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Telegram СЃРµСЂРІРёСЃР°...")
         
-        logger.info("Telegram сервис успешно инициализирован")
+        self.bot_token = settings.telegram_bot_token
+        self.channel_id = settings.telegram_channel_id
+        
+        # РџСЂРѕРІРµСЂСЏРµРј РЅР°СЃС‚СЂРѕР№РєРё
+        if not self.bot_token:
+            raise ValueError("TELEGRAM_BOT_TOKEN РЅРµ РЅР°СЃС‚СЂРѕРµРЅ")
+            
+        if not self.channel_id:
+            raise ValueError("TELEGRAM_CHANNEL_ID РЅРµ РЅР°СЃС‚СЂРѕРµРЅ")
+            
+        if self.bot_token == "test":
+            raise ValueError("TELEGRAM_BOT_TOKEN РёРјРµРµС‚ С‚РµСЃС‚РѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ")
+        
+        # РџСЂРѕРІРµСЂСЏРµРј С„РѕСЂРјР°С‚ С‚РѕРєРµРЅР°
+        if ":" not in self.bot_token:
+            raise ValueError(f"РќРµРІРµСЂРЅС‹Р№ С„РѕСЂРјР°С‚ TELEGRAM_BOT_TOKEN: {self.bot_token}")
+            
+        logger.info(f"Bot token: {self.bot_token[:10]}...")
+        logger.info(f"Channel ID: {self.channel_id}")
+            
+        try:
+            self.bot = Bot(token=self.bot_token)
+            self.max_retries = 3
+            self.retry_delay = 2
+            
+            logger.info("Telegram СЃРµСЂРІРёСЃ СѓСЃРїРµС€РЅРѕ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ")
+        except Exception as e:
+            raise ValueError(f"РћС€РёР±РєР° СЃРѕР·РґР°РЅРёСЏ Р±РѕС‚Р°: {e}")
 
     async def send_message(self, message: str, retry_count: int = 0) -> Dict[str, Any]:
         """
-        Асинхронная отправка сообщения в Telegram канал.
-        
-        Args:
-            message: Текст сообщения для отправки
-            retry_count: Текущее количество попыток отправки
-            
-        Returns:
-            Dict: Результат отправки:
-                - success: bool - успешность отправки
-                - message: str - описание результата
-                - retries: int - количество попыток
-                - error: str - описание ошибки (если есть)
+        РђСЃРёРЅС…СЂРѕРЅРЅР°СЏ РѕС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёСЏ РІ Telegram РєР°РЅР°Р».
         """
         if not message or not message.strip():
             return {
@@ -55,13 +61,15 @@ class TelegramNotificationService:
             }
         
         try:
+            logger.info(f"РћС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёСЏ РІ Telegram: {message[:50]}...")
+            
             await self.bot.send_message(
                 chat_id=self.channel_id,
                 text=message,
                 parse_mode='HTML'
             )
             
-            logger.info("Сообщение успешно отправлено в Telegram")
+            logger.info("вњ… РЎРѕРѕР±С‰РµРЅРёРµ СѓСЃРїРµС€РЅРѕ РѕС‚РїСЂР°РІР»РµРЅРѕ РІ Telegram")
             return {
                 'success': True,
                 'message': 'Message sent successfully',
@@ -69,20 +77,18 @@ class TelegramNotificationService:
             }
             
         except (NetworkError, TimedOut) as e:
-            # Сетевые ошибки - пробуем повторить
             if retry_count < self.max_retries:
                 logger.warning(
-                    f"Сетевая ошибка при отправке в Telegram. "
-                    f"Попытка {retry_count + 1}/{self.max_retries}. "
-                    f"Ошибка: {e}"
+                    f"РЎРµС‚РµРІР°СЏ РѕС€РёР±РєР° РїСЂРё РѕС‚РїСЂР°РІРєРµ РІ Telegram. "
+                    f"РџРѕРїС‹С‚РєР° {retry_count + 1}/{self.max_retries}. "
+                    f"РћС€РёР±РєР°: {e}"
                 )
-                import asyncio
                 await asyncio.sleep(self.retry_delay * (retry_count + 1))
                 return await self.send_message(message, retry_count + 1)
             else:
                 logger.error(
-                    f"Не удалось отправить сообщение в Telegram после "
-                    f"{self.max_retries} попыток. Ошибка: {e}"
+                    f"РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РІ Telegram РїРѕСЃР»Рµ "
+                    f"{self.max_retries} РїРѕРїС‹С‚РѕРє. РћС€РёР±РєР°: {e}"
                 )
                 return {
                     'success': False,
@@ -92,8 +98,7 @@ class TelegramNotificationService:
                 }
                 
         except TelegramError as e:
-            # Ошибки Telegram API
-            error_message = f"Ошибка Telegram API: {e}"
+            error_message = f"РћС€РёР±РєР° Telegram API: {e}"
             logger.error(error_message)
             return {
                 'success': False,
@@ -103,8 +108,7 @@ class TelegramNotificationService:
             }
             
         except Exception as e:
-            # Неожиданные ошибки
-            error_message = f"Неожиданная ошибка при отправке в Telegram: {e}"
+            error_message = f"РќРµРѕР¶РёРґР°РЅРЅР°СЏ РѕС€РёР±РєР° РїСЂРё РѕС‚РїСЂР°РІРєРµ РІ Telegram: {e}"
             logger.error(error_message)
             return {
                 'success': False,
@@ -113,48 +117,57 @@ class TelegramNotificationService:
                 'error': error_message
             }
 
-    async def send_report(self, analysis_report: dict) -> Dict[str, Any]:
+    async def test_connection(self) -> Dict[str, Any]:
         """
-        Отправка отчета анализа в Telegram.
-        
-        Args:
-            analysis_report: Словарь с данными отчета
-            
-        Returns:
-            Dict: Результат отправки отчета
+        РўРµСЃС‚РёСЂРѕРІР°РЅРёРµ РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє Telegram.
         """
         try:
-            message = analysis_report.get('telegram_message', '')
-            if not message:
-                logger.warning("Пустое сообщение для отправки в Telegram")
-                return {
-                    'success': False,
-                    'message': 'Empty report message',
-                    'error': 'No telegram_message in analysis_report'
-                }
-                
-            result = await self.send_message(message)
+            # РџРѕР»СѓС‡Р°РµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ Р±РѕС‚Рµ
+            bot_info = await self.bot.get_me()
+            logger.info(f"Bot info: {bot_info.username} ({bot_info.first_name})")
             
-            if result['success']:
-                logger.info(
-                    f"Отчет успешно отправлен в Telegram. "
-                    f"Попыток: {result['retries']}"
-                )
-            else:
-                logger.error(
-                    f"Ошибка отправки отчета в Telegram: {result.get('error', 'Unknown error')}"
-                )
-                
-            return result
+            # РўРѕР»СЊРєРѕ РїСЂРѕРІРµСЂСЏРµРј РїРѕРґРєР»СЋС‡РµРЅРёРµ, РЅРµ РѕС‚РїСЂР°РІР»СЏРµРј С‚РµСЃС‚РѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ
+            return {
+                'success': True,
+                'bot_username': bot_info.username,
+                'bot_name': bot_info.first_name,
+                'message': 'Connection test completed successfully'
+            }
             
         except Exception as e:
-            error_message = f"Ошибка отправки отчета: {e}"
-            logger.error(error_message)
+            logger.error(f"РћС€РёР±РєР° С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ Telegram: {e}")
             return {
                 'success': False,
-                'message': 'Report sending failed',
-                'error': error_message
+                'error': str(e),
+                'message': 'Connection test failed'
             }
 
-# Глобальный экземпляр сервиса
-telegram_service = TelegramNotificationService()
+def get_telegram_service():
+    """
+    Р¤Р°Р±СЂРёРєР° РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЌРєР·РµРјРїР»СЏСЂР° Telegram СЃРµСЂРІРёСЃР°.
+    """
+    try:
+        logger.info("РЎРѕР·РґР°РЅРёРµ Telegram СЃРµСЂРІРёСЃР°...")
+        
+        # РџСЂРѕРІРµСЂСЏРµРј РЅР°СЃС‚СЂРѕР№РєРё РїРµСЂРµРґ СЃРѕР·РґР°РЅРёРµРј
+        if not settings.telegram_bot_token:
+            logger.error("TELEGRAM_BOT_TOKEN РЅРµ РЅР°СЃС‚СЂРѕРµРЅ")
+            return None
+            
+        if not settings.telegram_channel_id:
+            logger.error("TELEGRAM_CHANNEL_ID РЅРµ РЅР°СЃС‚СЂРѕРµРЅ")
+            return None
+            
+        service = TelegramNotificationService()
+        logger.info("вњ… Telegram service created successfully")
+        return service
+        
+    except ValueError as e:
+        logger.error(f"вќЊ Telegram service configuration error: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"вќЊ Failed to create Telegram service: {e}")
+        return None
+
+# Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ СЌРєР·РµРјРїР»СЏСЂ СЃРµСЂРІРёСЃР°
+telegram_service = get_telegram_service()
