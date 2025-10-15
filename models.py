@@ -1,42 +1,42 @@
-from pydantic import BaseModel, Field, validator
+п»їfrom pydantic import BaseModel, Field, validator
 from datetime import datetime
 from typing import Optional, Dict, List, Any
 from enum import Enum
 
 class AlertSeverity(str, Enum):
-    """Уровни серьезности алертов"""
+    """РЈСЂРѕРІРЅРё СЃРµСЂСЊРµР·РЅРѕСЃС‚Рё Р°Р»РµСЂС‚РѕРІ"""
     CRITICAL = "critical"
     WARNING = "warning"
     INFO = "info"
 
 class AlertCategory(str, Enum):
-    """Категории алертов"""
+    """РљР°С‚РµРіРѕСЂРёРё Р°Р»РµСЂС‚РѕРІ"""
     SECURITY = "security"
     PERFORMANCE = "performance"
     INFRASTRUCTURE = "infrastructure"
     NETWORK = "network"
 
-# Модели запросов
+# РњРѕРґРµР»Рё Р·Р°РїСЂРѕСЃРѕРІ
 class WebhookRequest(BaseModel):
-    """Модель запроса для webhook ntopng"""
-    message: str = Field(..., description="Текст алерта от ntopng")
-    severity: Optional[str] = Field(None, description="Уровень серьезности")
-    timestamp: Optional[str] = Field(None, description="Временная метка алерта")
+    """РњРѕРґРµР»СЊ Р·Р°РїСЂРѕСЃР° РґР»СЏ webhook ntopng"""
+    message: str = Field(..., description="РўРµРєСЃС‚ Р°Р»РµСЂС‚Р° РѕС‚ ntopng")
+    severity: Optional[str] = Field(None, description="РЈСЂРѕРІРµРЅСЊ СЃРµСЂСЊРµР·РЅРѕСЃС‚Рё")
+    timestamp: Optional[str] = Field(None, description="Р’СЂРµРјРµРЅРЅР°СЏ РјРµС‚РєР° Р°Р»РµСЂС‚Р°")
 
     @validator('message')
     def message_not_empty(cls, v):
-        """Валидация: сообщение не должно быть пустым"""
+        """Р’Р°Р»РёРґР°С†РёСЏ: СЃРѕРѕР±С‰РµРЅРёРµ РЅРµ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј"""
         if not v or not v.strip():
             raise ValueError('Message cannot be empty')
         return v.strip()
 
 class BatchWebhookRequest(BaseModel):
-    """Модель запроса для пакетной обработки алертов"""
-    alerts: List[WebhookRequest] = Field(..., description="Список алертов для обработки")
+    """РњРѕРґРµР»СЊ Р·Р°РїСЂРѕСЃР° РґР»СЏ РїР°РєРµС‚РЅРѕР№ РѕР±СЂР°Р±РѕС‚РєРё Р°Р»РµСЂС‚РѕРІ"""
+    alerts: List[WebhookRequest] = Field(..., description="РЎРїРёСЃРѕРє Р°Р»РµСЂС‚РѕРІ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё")
     
     @validator('alerts')
     def alerts_not_empty(cls, v):
-        """Валидация: список алертов не должен быть пустым"""
+        """Р’Р°Р»РёРґР°С†РёСЏ: СЃРїРёСЃРѕРє Р°Р»РµСЂС‚РѕРІ РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј"""
         if not v:
             raise ValueError('Alerts list cannot be empty')
         if len(v) > 1000:
@@ -44,55 +44,55 @@ class BatchWebhookRequest(BaseModel):
         return v
 
 class TimeframeRequest(BaseModel):
-    """Модель запроса для анализа временного промежутка"""
-    minutes: int = Field(..., ge=1, le=43200, description="Период анализа в минутах (1-43200)")
+    """РњРѕРґРµР»СЊ Р·Р°РїСЂРѕСЃР° РґР»СЏ Р°РЅР°Р»РёР·Р° РІСЂРµРјРµРЅРЅРѕРіРѕ РїСЂРѕРјРµР¶СѓС‚РєР°"""
+    minutes: int = Field(..., ge=1, le=43200, description="РџРµСЂРёРѕРґ Р°РЅР°Р»РёР·Р° РІ РјРёРЅСѓС‚Р°С… (1-43200)")
 
-# Модели ответов
+# РњРѕРґРµР»Рё РѕС‚РІРµС‚РѕРІ
 class AlertResponse(BaseModel):
-    """Модель ответа с информацией об алерте"""
-    id: int = Field(..., description="ID алерта в базе данных")
-    timestamp: datetime = Field(..., description="Время создания алерта")
-    message: str = Field(..., description="Текст алерта")
-    severity: str = Field(..., description="Уровень серьезности")
-    alert_type: str = Field(..., description="Тип алерта")
-    risk_score: int = Field(..., description="Оценка риска (0-100)")
-    source_ip: Optional[str] = Field(None, description="IP-адрес источника")
+    """РњРѕРґРµР»СЊ РѕС‚РІРµС‚Р° СЃ РёРЅС„РѕСЂРјР°С†РёРµР№ РѕР± Р°Р»РµСЂС‚Рµ"""
+    id: int = Field(..., description="ID Р°Р»РµСЂС‚Р° РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…")
+    timestamp: datetime = Field(..., description="Р’СЂРµРјСЏ СЃРѕР·РґР°РЅРёСЏ Р°Р»РµСЂС‚Р°")
+    message: str = Field(..., description="РўРµРєСЃС‚ Р°Р»РµСЂС‚Р°")
+    severity: str = Field(..., description="РЈСЂРѕРІРµРЅСЊ СЃРµСЂСЊРµР·РЅРѕСЃС‚Рё")
+    alert_type: str = Field(..., description="РўРёРї Р°Р»РµСЂС‚Р°")
+    risk_score: int = Field(..., description="РћС†РµРЅРєР° СЂРёСЃРєР° (0-100)")
+    source_ip: Optional[str] = Field(None, description="IP-Р°РґСЂРµСЃ РёСЃС‚РѕС‡РЅРёРєР°")
     
     class Config:
         from_attributes = True
 
 class AnalysisResponse(BaseModel):
-    """Модель ответа с результатами анализа"""
-    timeframe_minutes: int = Field(..., description="Период анализа в минутах")
-    timeframe_human: str = Field(..., description="Период анализа в читаемом формате")
-    total_alerts: int = Field(..., description="Общее количество алертов")
-    severity_stats: Dict[str, int] = Field(..., description="Статистика по уровням серьезности")
-    alert_type_stats: Dict[str, int] = Field(..., description="Статистика по типам алертов")
-    source_ip_stats: Dict[str, int] = Field(..., description="Статистика по IP-адресам")
-    average_risk_score: float = Field(..., description="Средняя оценка риска")
-    top_alert_types: List[tuple] = Field(..., description="Топ типов алертов")
-    critical_alerts_count: int = Field(..., description="Количество критических алертов")
-    warning_alerts_count: int = Field(..., description="Количество предупреждений")
-    start_time: datetime = Field(..., description="Начало периода анализа")
-    end_time: datetime = Field(..., description="Конец периода анализа")
+    """РњРѕРґРµР»СЊ РѕС‚РІРµС‚Р° СЃ СЂРµР·СѓР»СЊС‚Р°С‚Р°РјРё Р°РЅР°Р»РёР·Р°"""
+    timeframe_minutes: int = Field(..., description="РџРµСЂРёРѕРґ Р°РЅР°Р»РёР·Р° РІ РјРёРЅСѓС‚Р°С…")
+    timeframe_human: str = Field(..., description="РџРµСЂРёРѕРґ Р°РЅР°Р»РёР·Р° РІ С‡РёС‚Р°РµРјРѕРј С„РѕСЂРјР°С‚Рµ")
+    total_alerts: int = Field(..., description="РћР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ Р°Р»РµСЂС‚РѕРІ")
+    severity_stats: Dict[str, int] = Field(..., description="РЎС‚Р°С‚РёСЃС‚РёРєР° РїРѕ СѓСЂРѕРІРЅСЏРј СЃРµСЂСЊРµР·РЅРѕСЃС‚Рё")
+    alert_type_stats: Dict[str, int] = Field(..., description="РЎС‚Р°С‚РёСЃС‚РёРєР° РїРѕ С‚РёРїР°Рј Р°Р»РµСЂС‚РѕРІ")
+    source_ip_stats: Dict[str, int] = Field(..., description="РЎС‚Р°С‚РёСЃС‚РёРєР° РїРѕ IP-Р°РґСЂРµСЃР°Рј")
+    average_risk_score: float = Field(..., description="РЎСЂРµРґРЅСЏСЏ РѕС†РµРЅРєР° СЂРёСЃРєР°")
+    top_alert_types: List[tuple] = Field(..., description="РўРѕРї С‚РёРїРѕРІ Р°Р»РµСЂС‚РѕРІ")
+    critical_alerts_count: int = Field(..., description="РљРѕР»РёС‡РµСЃС‚РІРѕ РєСЂРёС‚РёС‡РµСЃРєРёС… Р°Р»РµСЂС‚РѕРІ")
+    warning_alerts_count: int = Field(..., description="РљРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёР№")
+    start_time: datetime = Field(..., description="РќР°С‡Р°Р»Рѕ РїРµСЂРёРѕРґР° Р°РЅР°Р»РёР·Р°")
+    end_time: datetime = Field(..., description="РљРѕРЅРµС† РїРµСЂРёРѕРґР° Р°РЅР°Р»РёР·Р°")
 
 class HealthResponse(BaseModel):
-    """Модель ответа для проверки здоровья"""
-    status: str = Field(..., description="Статус сервиса")
-    service: str = Field(..., description="Название сервиса")
-    timestamp: datetime = Field(..., description="Время проверки")
-    database_status: str = Field(..., description="Статус базы данных")
-    cache_status: str = Field(..., description="Статус кэша")
+    """РњРѕРґРµР»СЊ РѕС‚РІРµС‚Р° РґР»СЏ РїСЂРѕРІРµСЂРєРё Р·РґРѕСЂРѕРІСЊСЏ"""
+    status: str = Field(..., description="РЎС‚Р°С‚СѓСЃ СЃРµСЂРІРёСЃР°")
+    service: str = Field(..., description="РќР°Р·РІР°РЅРёРµ СЃРµСЂРІРёСЃР°")
+    timestamp: datetime = Field(..., description="Р’СЂРµРјСЏ РїСЂРѕРІРµСЂРєРё")
+    database_status: str = Field(..., description="РЎС‚Р°С‚СѓСЃ Р±Р°Р·С‹ РґР°РЅРЅС‹С…")
+    cache_status: str = Field(..., description="РЎС‚Р°С‚СѓСЃ РєСЌС€Р°")
 
 class ErrorResponse(BaseModel):
-    """Модель ответа об ошибке"""
-    error: str = Field(..., description="Тип ошибки")
-    detail: Optional[str] = Field(None, description="Детали ошибки")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Время ошибки")
+    """РњРѕРґРµР»СЊ РѕС‚РІРµС‚Р° РѕР± РѕС€РёР±РєРµ"""
+    error: str = Field(..., description="РўРёРї РѕС€РёР±РєРё")
+    detail: Optional[str] = Field(None, description="Р”РµС‚Р°Р»Рё РѕС€РёР±РєРё")
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Р’СЂРµРјСЏ РѕС€РёР±РєРё")
 
 class BatchProcessingResponse(BaseModel):
-    """Модель ответа для пакетной обработки"""
-    total_alerts: int = Field(..., description="Общее количество обработанных алертов")
-    successful: int = Field(..., description="Количество успешно обработанных алертов")
-    failed: int = Field(..., description="Количество алертов с ошибками")
-    processing_time: float = Field(..., description="Время обработки в секундах")
+    """РњРѕРґРµР»СЊ РѕС‚РІРµС‚Р° РґР»СЏ РїР°РєРµС‚РЅРѕР№ РѕР±СЂР°Р±РѕС‚РєРё"""
+    total_alerts: int = Field(..., description="РћР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±СЂР°Р±РѕС‚Р°РЅРЅС‹С… Р°Р»РµСЂС‚РѕРІ")
+    successful: int = Field(..., description="РљРѕР»РёС‡РµСЃС‚РІРѕ СѓСЃРїРµС€РЅРѕ РѕР±СЂР°Р±РѕС‚Р°РЅРЅС‹С… Р°Р»РµСЂС‚РѕРІ")
+    failed: int = Field(..., description="РљРѕР»РёС‡РµСЃС‚РІРѕ Р°Р»РµСЂС‚РѕРІ СЃ РѕС€РёР±РєР°РјРё")
+    processing_time: float = Field(..., description="Р’СЂРµРјСЏ РѕР±СЂР°Р±РѕС‚РєРё РІ СЃРµРєСѓРЅРґР°С…")

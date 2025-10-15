@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./ntopng_alerts.db"
     
     # Server
-    server_host: str = "0.0.0.0"
+    server_host: str = "192.168.1.170"
     server_port: int = 8000
     debug: bool = True
     
@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     top_alerts_count: int = 10
     
     # Redis for caching and Celery
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = "redis://192.168.1.7:6379/0"
     cache_ttl: int = 300
     
     # Logging

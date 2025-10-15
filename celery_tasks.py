@@ -1,10 +1,10 @@
-from celery import Celery
+п»їfrom celery import Celery
 from loguru import logger
 from settings import get_settings
 
 settings = get_settings()
 
-# Инициализация Celery
+# РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Celery
 celery_app = Celery(
     'ntopng_analyzer',
     broker=settings.redis_url,
@@ -21,7 +21,7 @@ celery_app.conf.update(
 
 @celery_app.task(name='analyze_alerts_batch')
 def analyze_alerts_batch(alert_data_list: list):
-    """Фоновая задача для анализа пакета алертов"""
+    """Р¤РѕРЅРѕРІР°СЏ Р·Р°РґР°С‡Р° РґР»СЏ Р°РЅР°Р»РёР·Р° РїР°РєРµС‚Р° Р°Р»РµСЂС‚РѕРІ"""
     try:
         from services.alert_service import alert_analysis_service
         from database import db_manager
@@ -35,20 +35,20 @@ def analyze_alerts_batch(alert_data_list: list):
                     alert_id = await db_manager.save_alert(analysis)
                     results.append({'alert_id': alert_id, 'status': 'success'})
                 except Exception as e:
-                    logger.error(f"Ошибка обработки алерта: {e}")
+                    logger.error(f"РћС€РёР±РєР° РѕР±СЂР°Р±РѕС‚РєРё Р°Р»РµСЂС‚Р°: {e}")
                     results.append({'alert_id': None, 'status': 'error', 'error': str(e)})
             return results
         
-        # Запуск асинхронной обработки
+        # Р—Р°РїСѓСЃРє Р°СЃРёРЅС…СЂРѕРЅРЅРѕР№ РѕР±СЂР°Р±РѕС‚РєРё
         return asyncio.run(process_alerts())
         
     except Exception as e:
-        logger.error(f"Ошибка в фоновой задаче: {e}")
+        logger.error(f"РћС€РёР±РєР° РІ С„РѕРЅРѕРІРѕР№ Р·Р°РґР°С‡Рµ: {e}")
         return {'status': 'error', 'error': str(e)}
 
 @celery_app.task(name='generate_complex_report')
 def generate_complex_report(timeframe_minutes: int):
-    """Фоновая задача для генерации сложных отчетов"""
+    """Р¤РѕРЅРѕРІР°СЏ Р·Р°РґР°С‡Р° РґР»СЏ РіРµРЅРµСЂР°С†РёРё СЃР»РѕР¶РЅС‹С… РѕС‚С‡РµС‚РѕРІ"""
     try:
         from services.analysis_service import timeframe_analysis_service, report_generation_service
         from services.telegram_service import telegram_service
@@ -60,7 +60,7 @@ def generate_complex_report(timeframe_minutes: int):
                 analysis = await timeframe_analysis_service.analyze_timeframe(session, timeframe_minutes)
                 telegram_message = await report_generation_service.generate_telegram_report(analysis)
                 
-                # Отправка в Telegram
+                # РћС‚РїСЂР°РІРєР° РІ Telegram
                 success = await telegram_service.send_message(telegram_message)
                 return {
                     'timeframe': timeframe_minutes,
@@ -72,5 +72,5 @@ def generate_complex_report(timeframe_minutes: int):
         return asyncio.run(generate_report())
         
     except Exception as e:
-        logger.error(f"Ошибка генерации сложного отчета: {e}")
+        logger.error(f"РћС€РёР±РєР° РіРµРЅРµСЂР°С†РёРё СЃР»РѕР¶РЅРѕРіРѕ РѕС‚С‡РµС‚Р°: {e}")
         return {'status': 'error', 'error': str(e)}

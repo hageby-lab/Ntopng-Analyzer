@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 from telegram import Bot
 from telegram.error import TelegramError
 from config import config
